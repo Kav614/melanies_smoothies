@@ -124,6 +124,13 @@ Setting up DataGrip for Snowflake:
 
    ![image](https://github.com/user-attachments/assets/88347c61-29ec-46a5-a2d5-405c211ccf85)
 
+   •	 Once Created, open the Pull request and add reviewers if needed.
+
+   ![image](https://github.com/user-attachments/assets/37c188c6-3cf7-4562-8a92-81ddd8abc6ca)
+
+   •	 After review and approval, Complete the Pull request.
+
+
 2. Or you can do the Pull request in Another method  
    •	Go to your repository on Azure Devops.
    •	Locate the new feature branch and create a pull request to merge it into the ‘main/master’ or ‘development’ branch.
@@ -136,10 +143,8 @@ Setting up DataGrip for Snowflake:
 
 Key Components of Release Monitoring
 
-1. Tracking Deployment Steps
-   
-   •	Monitor each step of the deployment pipeline to ensure every process is executed as expected.
-   
+1. Tracking Deployment Steps: The build pipeline will be automatically triggered after completing the pull request, which will bring the release into the main branch
+
    
    ![image](https://github.com/user-attachments/assets/5cb58787-eb5f-40b7-87b9-087d3fb036da)
    
