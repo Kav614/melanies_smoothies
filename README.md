@@ -1,175 +1,69 @@
-                                Setting Up DataGrip for Snowflake
+                                          Connecting public API to snowflake
+                                         
+**To connect to any API from snowflake we need to create aa network rule and External access Integration.**
 
-This guide provides step-by-step instructions to configure DataGrip to connect to a Snowflake environment.
- 
-Prerequisites:
-- DataGrip installed on your system.
-- Snowflake account and user credentials.
- 
-Setting up DataGrip for Snowflake:
+**STEP 1:** CREATE A NETWORK RULE USING INFRA ROLE
 
-1.	Install DataGrip
-   
-2.	Install Necessary Plugins:
-     •	Open DataGrip
-     •	Go to Plugins.
-     •	Install the following plugins if not already available:
-            Azure Devops
-  	
-  	![image](https://github.com/user-attachments/assets/f4e5ac75-5590-420c-b6d3-daeb79188640)
-  	
-     •	Restart DataGrip if prompted.
-  	
-3.  Next Clone the Repository in Visual Studio 2022
-     If you haven’t already cloned your repository, start by cloning it to your local system:
-     •	Git link:  https://dev.azure.com/biclarionhg/Data%20Engineering%20Kanban/_git/SnowflakeDatabases 
-     •	Path: C:\Source\Snowflake\SnowflakeDatabases
-    
-    ![image](https://github.com/user-attachments/assets/f949ad0f-e28e-4c32-ad2f-846c2cf539de)
-    
-4. Open DataGrip > Projects > open project > go to the path where we saved and then click ok. 
+CREATE OR REPLACE NETWORK RULE MS_NETWORK_RULE
 
-   ![image](https://github.com/user-attachments/assets/af73b550-e007-4649-a93c-7906a976f18a)
+MODE = EGRESS
 
-    
-5. Open DataGrip and Connect to Snowflake:
-   
-     •	Open Database Explorer in DataGrip.
-     •	Click on +(Add) > Data Source > Snowflake.
+TYPE = HOST_PORT
 
-   
-   ![image](https://github.com/user-attachments/assets/336d6b4f-a810-4f62-a4cd-931810546b63)
+VALUE_LIST = ('www.microsoft.com');      **-- Please change the url according to the requirement**
+  
+**STEP 2:** CREATE A EXTERNAL ACCESS INTEGRATION USING INFRA ROLE
 
-     •	Open Database Explorer in DataGrip.
-     •	Click on +(Add) > Data Source > Snowflake.
-     •	Configure the Connection
-     •	Username and Password: Enter your Snowflake credentials.
-     •	Warehouse: Specify the warehouse you want to connect to 
-     •	Host: OK21198.UK-SOUTH.AZURE.SNOWFLAKECOMPUTING.COM
-     •	Role: SNOWFLAKE_RBAC_AS_DA_DATAENGINEER_DEV
-     •	Database: Enter the default database 
-     •	Schema: Specify the schema
-   
-   
-   ![image](https://github.com/user-attachments/assets/92c42e61-1889-4d6d-9b92-c5c8027ac606)
+CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION MS_ACCESS_INTEGRATION
 
-   
-    •	Click Test Connection to verify that DataGrip can connect to Snowflake. If the connection succeeds, you’ll see a confirmation.
-   
-6. Save the Configuration  
-    •	Once the connection test is successful, click apply and OK to save the configuration.
+  ALLOWED_NETWORK_RULES = (MS_NETWORK_RULE)
+  
+  ENABLED = true;
+  
+**We can load the data into a internal stage and to a table directly from API. For both types we will see the code below.**
 
-   
-7. Once again open the snowflake connection and select the schemas and click ok.
+**STEP 3:** CREATE A STORED PROCEDURE TO CONNECT TO API AND LOAD THE DATA INTO INTERNAL STAGE
 
-   
-   ![image](https://github.com/user-attachments/assets/2f1bce4e-facf-42eb-9fc1-76090ebc4d0e)
+![image](https://github.com/user-attachments/assets/2f4bc509-439a-4c6e-a789-b5aff3a4bf87)
 
+Before creating the store proc, create one internal stage in a DEV environment and schema you want to work on and give that stage name in the code for lines 41 and 46.
 
-   
-8. Troubleshooting
-    •	Connection Timeouts: Check your network and Snowflake permissions.
-    •	Invalid Credentials: Double-check your account identifier, username, and password.
+![image](https://github.com/user-attachments/assets/db9cdafb-c74d-4d79-aa06-bedff7ddb7f6)
 
-                      Working with Feature Branches in Git for Snowflake Development
-    
- This guide explains how to create and manage a feature branch in Git for Snowflake project.
+**Note:** You can create the internal stage using the code below also
 
-1. Create a New Feature Branch in DataGrip
-   •	Open the Git tab in DataGrip.
-   •	Select Branch > New Branch
-   
+  CREATE STAGE sample_stage_112024 
+	DIRECTORY = ( ENABLE = true );
 
-   ![image](https://github.com/user-attachments/assets/0f3d29a4-ec6e-433a-8427-9240a6544bf7)
+And give the file name in the line 40 accordingly.
 
+Now you can create the store proc and call the store proc.
 
-   •	Naming convention: ‘feature/<feature-name>’
-   
-   
-   ![image](https://github.com/user-attachments/assets/bb87a66e-638d-4678-b813-04bc6c0a9fae)
-   
-   
-   •	Ensure you are now on your new branch
-   
-   
-   ![image](https://github.com/user-attachments/assets/f97437c4-2d1c-4882-a193-eac27a8c1012)
+**CALL SAVE_TODOS_01()**
 
-   
-2. Make Changes on the Feature Branch 
-   •	Implement Changes related to the feature or ticket.
+Once you call the store proc it fetch the data from the url and write the data in internal stage as .json file format.
 
-   
-   ![image](https://github.com/user-attachments/assets/ed62c10a-c3b9-4eb7-abee-fb4c44f0cb9b)
+![image](https://github.com/user-attachments/assets/c3f7dedb-dea4-4c97-a596-d35da9e1fe6d)
 
-   
-   •	Regularly commit and push your changes to your branch:
-       Select the files and (Commit & push)
+You can download the file and check the data and also you can list the files using list function from stage in snowflake.
 
-   
-   ![image](https://github.com/user-attachments/assets/d950a041-c66e-4cf9-8d34-edcc5ed36704)
+**Ex:** list @SAMPLE_STAGE_112024;
 
-   
+Now, we will see how to fetch the data directly into the table.
 
-                              Merging Feature Branch to Main Branch
-   
-1. Create a Pull Request (PR)
-    We can do the PR in Data Grip : Click on Git > pull requests
+**CREATE A STORED PROCEDURE TO CONNECT TO API AND LOAD THE DATA INTO TABLE**
 
-   
-   ![image](https://github.com/user-attachments/assets/e9ba7e16-8252-43b5-9d7a-11a6c47f1c8b)
-   
+![image](https://github.com/user-attachments/assets/aaaa2e27-b40e-4ff2-aafc-7ced011d9dd5)
 
-   •	Click on (+) to create a new request > give the target branch main > give the title and description according to your ticket.
-   •	You can see your changes and commits and then click on create pull request
+Change the table name accordingly in line 30 and create a store proc by running the above code. Call the store proc 
 
-   ![image](https://github.com/user-attachments/assets/88347c61-29ec-46a5-a2d5-405c211ccf85)
+**CALL SAVE_TODOS_08()**
 
-   •	 Once Created, open the Pull request and add reviewers if needed.
+Once you call the store proc it will fetch the data from the url into table.
 
-   ![image](https://github.com/user-attachments/assets/37c188c6-3cf7-4562-8a92-81ddd8abc6ca)
-
-   •	 After review and approval, Complete the Pull request.
-
-
-2. Or you can do the Pull request in Another method  
-   •	Go to your repository on Azure Devops.
-   •	Locate the new feature branch and create a pull request to merge it into the ‘main/master’ or ‘development’ branch.
-   •	Add reviewers if needed.
-   
-3. Merge the Pull Request
-   •	After review and approval, merge the PR into the target branch. You can delete the feature branch once it’s merged. 
-
-                                Monitoring the Release Process
-
-Key Components of Release Monitoring
-
-1. Tracking Deployment Steps: The build pipeline will be automatically triggered after completing the pull request, which will bring the release into the main branch
-
-   
-   ![image](https://github.com/user-attachments/assets/5cb58787-eb5f-40b7-87b9-087d3fb036da)
-   
-   
-   There are 3 steps to the pipeline
-   •	First after it is released to UAT. Confirm that the release meets expected quality standards and performs as intended in UAT.
-   •	Get approval for the production release.
-   •	Confirm that the release meets expected quality standards and performs as intended in production.
-   
-2. Error Logging and Alerting  
-   •	If any error occurs, check the error and change it accordingly
-
-
-   
+![image](https://github.com/user-attachments/assets/1ce26610-3eb0-4e79-8820-c839be511b5c)
 
 
 
 
-
-
-
-
-
-
-
-
-     
 
